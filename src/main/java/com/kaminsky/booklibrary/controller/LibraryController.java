@@ -1,14 +1,11 @@
 package com.kaminsky.booklibrary.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kaminsky.booklibrary.entity.Book;
-import com.kaminsky.booklibrary.exceptions.JsonException;
 import com.kaminsky.booklibrary.repository.BookRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -16,58 +13,40 @@ import java.util.Optional;
 @RequestMapping("/")
 public class LibraryController {
     private final BookRepository bookRepository;
-    private final ObjectMapper mapper;
 
-    public LibraryController(BookRepository bookRepository, ObjectMapper mapper) {
+    public LibraryController(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
-        this.mapper = mapper;
     }
 
     @GetMapping()
-    public String getAllBooks(Pageable pageable) {
-        try {
-            return mapper.writeValueAsString(bookRepository.findAll(pageable));
-        } catch (JsonProcessingException e) {
-            throw new JsonException();
-        }
+    public Page<Book> getAllBooks(Pageable pageable) {
+        return bookRepository.findAll(pageable);
     }
 
     @GetMapping("{id}")
-    public String getBookById(@PathVariable Long id) {
+    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
         Optional<Book> book = bookRepository.findById(id);
         if (book.isPresent()) {
-            try {
-                return mapper.writeValueAsString(book.get());
-            } catch (JsonProcessingException e) {
-                throw new JsonException();
-            }
+            return ResponseEntity.ok(book.get());
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Книга не найдена");
     }
 
-
     @PostMapping
-    public void addBook(@RequestBody String bookJson) {
-        try {
-            bookRepository.save(mapper.readValue(bookJson, Book.class));
-        } catch (JsonProcessingException e) {
-            throw new JsonException();
-        }
+    public void addBook(@RequestBody Book book) {
+        bookRepository.save(book);
     }
 
     @PutMapping("{id}")
-    public void updateBook(@RequestBody String bookJson, @PathVariable Long id) {
+    public ResponseEntity<Book> updateBook(@RequestBody Book book, @PathVariable Long id) {
         if (!bookRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Книга не найдена");
+            return ResponseEntity.notFound().build();
         }
-        Book book;
-        try {
-            book = mapper.readValue(bookJson, Book.class);
-            book.setId(id);
-            bookRepository.save(book);
-        } catch (JsonProcessingException e) {
-            throw new JsonException();
-        }
+        book.setId(id);
+        Book updatedBook = bookRepository.save(book);
+
+        return ResponseEntity.ok(updatedBook);
     }
 
     @DeleteMapping("{id}")
