@@ -7,6 +7,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -24,5 +25,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<String> handleInvalidMethod(HttpRequestMethodNotSupportedException ex) {
         return new ResponseEntity<>("Такой тип запроса не поддерживается", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JsonException.class)
+    public ResponseEntity<String> handleInvalidMethod(JsonException ex) {
+        return new ResponseEntity<>("Проблема с JSON", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<String> handleInvalidMethod(ResponseStatusException ex) {
+        return new ResponseEntity<>("Объект по запросу не найден", HttpStatus.NOT_FOUND);
     }
 }

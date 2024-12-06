@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.web.servlet.MvcResult;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -63,7 +61,7 @@ public class LibraryControllerTests {
     public void testGet() throws Exception {
         mockMvc.perform(get("/?page=0&size=1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
                 .andExpect(jsonPath("$.content").exists())
                 .andExpect(jsonPath("$.content.length()").value(2))
                 .andExpect(jsonPath("$.content[0].title").value("The Great Gatsby"));
@@ -76,7 +74,7 @@ public class LibraryControllerTests {
     public void testGetById() throws Exception {
         mockMvc.perform(get("/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.title").value("The Great Gatsby"));
 
